@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 # Load libraries. 
 library(stringr)
 library(hexbin)
@@ -41,14 +41,9 @@ library(tidyverse)
 ```
 
 
-```{r, echo=FALSE, include=FALSE}
-# Note: could not find data to download for slavery-youth-parent file (Figure 6). 
-```
-
-
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
-# I think this calls the code from the panel-utils file.
+# Calls the code from the panel-utils file.
 source("./dataverse_files/panel-utils.R")
 
 
@@ -236,8 +231,6 @@ abline(lm(I(wtherm-btherm) ~ pslave1860, weights = sample.size.bt, data = subset
 
 
 ```{r table1, echo = FALSE, message=FALSE, warning=FALSE}
-## Tables
-
 # Regressions for tables; need to figure out how to combine, flesh out, and print in table
 cnty.res <- lm(dem ~ pslave1860, data = south.counties, weights = sample.size)
 #summary(cnty.res)
@@ -282,10 +275,10 @@ therm.1860.rse <- robust.se(therm.1860, clvar = "fips")
 #therm.1860.rse
 
 ## for comparison with coefficient
-0.2*abs(coef(cnty.res.full)["pslave1860"])/sd(south.counties$dem, na.rm = TRUE)
-0.2*abs(coef(cnty.aff.full)["pslave1860"])/sd(south.counties$affirm, na.rm = TRUE)
-0.2*coef(cnty.resent.full)["pslave1860"]/sd(south.counties$resent, na.rm = TRUE)
-0.2*coef(therm.1860)["pslave1860"]/sd(ns.whites$therm.diff, na.rm = TRUE)
+#0.2*abs(coef(cnty.res.full)["pslave1860"])/sd(south.counties$dem, na.rm = TRUE)
+#0.2*abs(coef(cnty.aff.full)["pslave1860"])/sd(south.counties$affirm, na.rm = TRUE)
+#0.2*coef(cnty.resent.full)["pslave1860"]/sd(south.counties$resent, na.rm = TRUE)
+#0.2*coef(therm.1860)["pslave1860"]/sd(ns.whites$therm.diff, na.rm = TRUE)
 ```
 
 
@@ -305,6 +298,7 @@ tab1 <- tab1[-(length(tab1)-1)]
 ```
 
 
+# Other figures
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results = "asis"}
 ## Instrumental Variables
@@ -472,6 +466,8 @@ cat(paste(septherm.tab, collapse = "\n"), "\n")
 ctytherm.tab <- stargazer(therm.cty.mod, therm.cty.mod.fe, therm.cty.1860, therm.cty.iv,
           type = "html", keep = "pslave1860", style = "apsr", omit.stat = c("ll", "adj.rsq", "F", "ser"),
           covariate.labels = c("Prop. Slave, 1860"), dep.var.labels = c("White Thermometer - Black Thermometer (-100 to 100)"), column.sep.width = "0pt", float = FALSE, header = FALSE, add.lines = list(rep("", 5), ch.row("Clustered SEs", rep(TRUE,4)), ch.row("State-Year Fixed Effects", rep(TRUE,4)), ch.row("Geographic Controls", rep(TRUE,4)), ch.row("1860 Covariates", c(TRUE, FALSE, TRUE, FALSE)), rep("", 7)), multicolumn = TRUE)
+
+
 ctytherm.tab[4] <- "\\\\[-1.8ex] &  \\multicolumn{4}{c}{White Thermometer - Black Thermometer (-100 to 100)} \\\\ "
 ctytherm.tab[5] <- "\\\\[-1.8ex] &  \\multicolumn{3}{c}{OLS} & IV \\\\ "
 ctytherm.tab <- ctytherm.tab[-6]
@@ -518,18 +514,12 @@ match.resent <- lm(update(base1860.form, resent ~ south + . - pslave1860 - state
 
 ```
 
+
+
+
+
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results="asis"}
-## Table 2
-match.tab <- stargazer(cnty.res.neighbor, match.dem, cnty.aff.neighbor, match.aff, cnty.resent.neighbor, match.resent,
-          dep.var.labels = c("Prop Democrat", "Affirm. Action", "Racial Resentment"), keep = c("pslave1860","south"), covariate.labels = c("Prop. Slave, 1860","Slave State"),
-           style = "apsr", omit.stat = c("ll", "adj.rsq", "F", "ser"), column.sep.width = "0pt", float = FALSE, header = FALSE, add.lines = list(rep("", 7), ch.row("State Fixed Effects", rep(c(TRUE,FALSE),3)), ch.row("1860 Covariates", rep(TRUE, 6)), ch.row("50\\% Threshold Match", rep(c(TRUE,FALSE), 3)), ch.row("North-South Match", rep(c(FALSE,TRUE), 3)), rep("", 7)), multicolumn = TRUE)
-match.tab[4] <- "\\\\[-1.8ex] &  \\multicolumn{2}{c}{Prop. Democrat} & \\multicolumn{2}{c}{Affirm. Action} & \\multicolumn{2}{c}{Racial Resentment} \\\\ "
-match.tab <- gsub("\\{\\*\\}", "\\{\\\\dagger\\}", match.tab)
-match.tab <- gsub("\\{\\*\\*\\}", "\\{\\*\\}", match.tab)
-match.tab <- gsub("\\{\\*\\*\\*\\}", "\\{\\*\\*\\}", match.tab)
-match.tab <- match.tab[-(length(match.tab)-1)]
-cat(paste(match.tab, collapse = "\n"), "\n")
-##cat(paste(match.tab, collapse = "\n"), "\n", file = "../tables/matching.tex")
+#Figure regressions
 
 
 cor(south.counties$pslave1860, south.counties$blkprop00, use = "pairwise")
@@ -590,6 +580,13 @@ boots <- 1000
 cnty.dem.blk00.boots <- rep(NA, times = boots)
 cnty.aff.blk00.boots <- rep(NA, times = boots)
 cnty.resent.blk00.boots <- rep(NA, times = boots)
+
+
+```
+
+
+
+```{r, cache=TRUE}
 for (b in 1:boots) {
   sc.star <- south.counties[sample(1:nrow(south.counties), replace = TRUE),]
   boot.dem.first <- lm(update(base1860.form, dem ~ . + blkprop00 +log(totpop00) +highsch90 + unemp + log(medinc00) + wbincratio00), data =sc.star, weights = sample.size)
@@ -605,7 +602,10 @@ for (b in 1:boots) {
   cnty.resent.blk00.boots[b] <- coef(boot.resent)["pslave1860"]
 
 }
+```
 
+
+```{r}
 
 # Put bootstrapped SEs into a holder (we don't calculate the BSE for
 # the other coefficients since we don't care about them and don't
@@ -622,6 +622,8 @@ resent.bse["pslave1860"] <- sd(cnty.resent.blk00.boots)
 blkprop.tab <- stargazer(cnty.res.blk00.ptbias, cnty.dem.blk00, cnty.aff.blk00.ptbias, cnty.aff.blk00, cnty.resent.blk00.ptbias, cnty.resent.blk00,
           keep = c("pslave1860", "blkprop00"), style = "apsr", omit.stat = c("ll", "adj.rsq", "F", "ser"), se = list(NULL, dem.bse, NULL, aff.bse, NULL, resent.bse),
           covariate.labels = c("Prop. Slave, Direct Effect", "Prop. Black, 2000"), dep.var.labels = c("Prop Democrat", "Affirm. Action", "Racial Resentment"), column.sep.width = "5pt", float = FALSE, header = FALSE, add.lines = list(rep("", 7), ch.row("State Fixed Effects", rep(TRUE, 6)), ch.row("1860 Covariates", rep(TRUE, 6)), ch.row("Bootstrapped SEs", rep(c(FALSE,TRUE), 3)), c("Model", rep(c("WLS", "Seq. g-est."), 3)), rep("", 7)), multicolumn = TRUE)
+
+
 blkprop.tab[4] <- "\\\\[-1.8ex] &  \\multicolumn{2}{c}{Prop. Democrat} & \\multicolumn{2}{c}{Affirm. Action} & \\multicolumn{2}{c}{Racial Resentment} \\\\ "
 blkprop.tab <- gsub("\\{\\*\\}", "\\{\\\\dagger\\}", blkprop.tab)
 blkprop.tab <- gsub("\\{\\*\\*\\}", "\\{\\*\\}", blkprop.tab)
@@ -652,20 +654,6 @@ cnty.aff.mortrate <- lm(update(base1860.form, affirm ~ . + I(log(s.mortrate/w.mo
 
 cnty.resent.mortrate <- lm(update(base1860.form, resent ~ . + I(log(s.mortrate/w.mortrate))), data = south.counties, weights = sample.size.res, subset = s.mortrate > 0)
 # summary(cnty.resent.mortrate)
-
-
-ante.tab <- stargazer(cnty.dem.mortrate, cnty.dem.houses, cnty.aff.mortrate, cnty.aff.houses, cnty.resent.mortrate, cnty.resent.houses, type = "html",
-          keep = c("pslave1860", "mortrate", "slavesperhouse"), style = "apsr", omit.stat = c("ll", "adj.rsq", "F", "ser"),
-          covariate.labels = c("Prop. Slave, 1860", "Log Relative Slave Mortality, 1860", "Avg. Residents per Slave Dwelling"), dep.var.labels = c("Prop Democrat", "Affirm. Action", "Racial Resentment"), column.sep.width = "5pt", float = FALSE, header = FALSE, add.lines = list(rep("", 7), ch.row("State Fixed Effects", rep(TRUE, 6)), ch.row("1860 Covariates", rep(TRUE, 6)), rep("", 7)), multicolumn = FALSE)
-
-
-ante.tab[4] <- "\\\\[-1.8ex] &  \\multicolumn{2}{c}{Prop. Democrat} & \\multicolumn{2}{c}{Affirm. Action} & \\multicolumn{2}{c}{Racial Resentment} \\\\ "
-ante.tab <- gsub("\\{\\*\\}", "\\{\\\\dagger\\}", ante.tab)
-ante.tab <- gsub("\\{\\*\\*\\}", "\\{\\*\\}", ante.tab)
-ante.tab <- gsub("\\{\\*\\*\\*\\}", "\\{\\*\\*\\}", ante.tab)
-ante.tab <- ante.tab[-(length(ante.tab)-1)]
-cat(paste(ante.tab, collapse = "\n"), "\n")
-##cat(paste(ante.tab, collapse = "\n"), "\n", file = "../tables/antebellum.tex")
 ```
 
 
@@ -810,18 +798,23 @@ cnty.resent.tract <- lm(update(base1860.form, resent ~ pslave1860*tractor.growth
 # summary(cnty.resent.tract)
 
 quantile(south.counties$tractor.growth, probs = c(0.1, 0.9),na.rm = TRUE)
+
+
 ## CIs for 1st, 3rd quartiles using the sequential g-estimation approach
 cnty.dem.tract.lo <- lm(update(base1860.form, I(dem - coef(cnty.dem.tract)['tractor.growth']*(tractor.growth - 0) - coef(cnty.dem.tract)['pslave1860:tractor.growth']*(tractor.growth-0)*pslave1860) ~ .), data = south.counties, weights = sample.size)
 coef(cnty.dem.tract.lo)["pslave1860"]
 confint(cnty.dem.tract.lo)["pslave1860",]
 
+
 cnty.dem.tract.hi <- lm(update(base1860.form, I(dem - coef(cnty.dem.tract)['tractor.growth']*(tractor.growth - 0.07) - coef(cnty.dem.tract)['pslave1860:tractor.growth']*(tractor.growth-0.07)*pslave1860) ~ .), data = south.counties, weights = sample.size)
 coef(cnty.dem.tract.hi)["pslave1860"]
 confint(cnty.dem.tract.hi)["pslave1860",]
 
+
 tractlynch.tab <- stargazer(lynch.1860, cnty.dem.tract, cnty.aff.tract, cnty.resent.tract, type = "html",
           keep = c("pslave1860", "tractor.growth"), style = "apsr", omit.stat = c("ll", "adj.rsq", "F", "ser"),
           covariate.labels = c("Prop. Slave, 1860", "Tractors Change, 1930-1940", "Prop Slave $\\times$ Tractors Change"), dep.var.labels = c("Lynchings", "Prop Democrat", "Affirm. Action", "Racial Resentment"), column.sep.width = "5pt", float = FALSE, header = FALSE, add.lines = list(rep("", 5), ch.row("State-Year Fixed Effects", rep(c(TRUE),4)), ch.row("1860 Covariates", rep(TRUE, 4)), rep("", 5)), multicolumn = FALSE)
+
 tractlynch.tab[4] <- "\\\\[-1.8ex] &  Lynchings & Prop. Democrat & Affirm. Action & Racial Resentment \\\\ "
 tractlynch.tab <- gsub("\\{\\*\\}", "\\{\\\\dagger\\}", tractlynch.tab)
 tractlynch.tab <- gsub("\\{\\*\\*\\}", "\\{\\*\\}", tractlynch.tab)
@@ -886,8 +879,12 @@ cat(paste(intermed.tab, collapse = "\n"), "\n")
 ## Most county boundaries are set by 1925 or so.
 ## variables without the 1860 suffix are based on the 1860 county
 ## boundaries
+
 pres.form <- formula(. ~ sprop + log(coarea00) + latitude + I(latitude^2) + longitude + I(longitude^2)+ rugged  + land.ineq + sfarmprop + log(totpop) + log(fvalpc) + log(acimp) + fbprop  + rail + water + state.abb)
+
 pres.iv.form <- Formula(. ~ sprop + log(coarea00) + rugged + latitude + I(latitude^2) + longitude + I(longitude^2)  + water  + state.abb | cottonsuit + log(coarea00) + rugged  + latitude + I(latitude^2) + longitude + I(longitude^2) + water  + state.abb)
+
+
 year.list <- seq(1840, 1964, by = 4)
 outvars <- paste("pdem", year.list, sep = "")
 pdemcoefs <- matrix(NA, nrow = length(outvars), ncol = 3)
@@ -895,6 +892,8 @@ pdemcoefs.nox <- matrix(NA, nrow = length(outvars), ncol = 3)
 pdemcoefs.iv <- matrix(NA, nrow = length(outvars), ncol = 3)
 pdemcoefs.rfns <- matrix(NA, nrow = length(outvars), ncol = 3)
 pdemcoefs.rf <- matrix(NA, nrow = length(outvars), ncol = 3)
+
+
 for (y in 1:length(outvars)) {
   if (!(outvars[y] %in% c("pdem1864", "pdem1868"))) {
     ## OLS
@@ -934,6 +933,8 @@ for (y in 1:length(outvars)) {
     pdemcoefs.rf[y,1] <- coef(thismod)[2]
     pdemcoefs.rf[y,2:3] <- confint(thismod)[2,]
   }
+  
+  
   ## if (outvars[y] %in% c("pdem1860","pdem1864")) {
   ##   pdemcoefs[y,1] <- NA
   ##   pdemcoefs[y,2:3] <- NA
@@ -944,6 +945,7 @@ for (y in 1:length(outvars)) {
   ##   pdemcoefs[y,1] <- NA
   ##   pdemcoefs[y,2:3] <- NA
   ## }
+  
 }
 
 douglas.ols <- lm(update(pres.form, pdem1860 ~ .), data = countydata, subset = state.abb %in% st.list)
@@ -951,6 +953,7 @@ douglas.iv <- ivreg(update(pres.iv.form, pdem1860 ~ .), data = countydata, subse
 
 wallace.ols <- lm(update(base1860.form, wallace68.alt ~ .), data = countydata, subset = state.abb %in% st.list)
 wallace.iv <- ivreg(update(base.iv.form, wallace68.alt ~ .), data = countydata, subset = state.abb %in% st.list)
+
 thurmond.ols <- lm(update(base1860.form, thurmond48 ~ .), data = countydata, subset = state.abb %in% st.list)
 thurmond.iv <- ivreg(update(base.iv.form, thurmond48 ~ .), data = countydata, subset = state.abb %in% st.list)
 obama.ols <- lm(update(base1860.form,  wht.obama.vote ~ .), data = countydata, subset = abs.sample == 1)
@@ -999,373 +1002,8 @@ segments(x0 = year.list[year.list > 1868] + 1, y0 = pdemcoefs.rf[year.list > 186
 ##dev.off()
 
 
-### Appendix tables
-
-south.counties$lynchrate.scaled <- 100000*south.counties$lynchrate
-
-sum.tab <- stargazer(south.counties[,c("dem", "affirm", "resent","lynchrate.scaled","coarea00", "rugged", "latitude", "longitude", "pslave1860", "land.ineq1860", "sfarmprop1860", "totpop1860", "fvalpac1860", "fbprop1860", "rail1860", "water1860", "cottonsuit", "blkprop00","tractor.growth")], covariate.labels = c("Prop. Democrat", "Support for Affirmative Action", "Racial Resentment", "Lynchings per 100,000 1920 Residents, 1882-1930", "County Area, 2000", "Ruggedness", "Latitude, 2000", "Longitude, 2000", "Prop. Slave, 1860", "Gini Coefficient for Land Holdings, 1860", "Prop. Small Farms ($<$ 50 Acres), 1860", "Total Population, 1860", "Farm Value per Capita, 1860", "Prop. Free Black, 1860", "Rail Access, 1860", "Water Acces, 1860", "Cotton Suitability", "Prop. Black, 2000", "Tractor Growth, 1930-1940"), float = FALSE, header = FALSE)
-sum.tab <- append(sum.tab, "\\emph{Outcomes} \\\\", after = 6)
-sum.tab <- append(sum.tab, "\\\\ \\emph{Geographic Variables} \\\\", after = 11)
-sum.tab <- append(sum.tab, "\\\\ \\emph{1860 Variables} \\\\", after = 16)
-sum.tab <- append(sum.tab, "\\\\ \\emph{Other Variables} \\\\", after = 25)
-cat(paste(sum.tab, collapse = "\n"), "\n")
-##cat(paste(sum.tab, collapse = "\n"), "\n", file = "../tables/summary-stats-county.tex")
-
-cces.sum.tab <- stargazer(s.whites[,c("dem", "affirm", "resent", "age", "religion", "female", "inc.mid")], covariate.labels = c("Democratic Identification", "Support for Affirmative Action", "Racial Resentment", "Age", "Religious Importance", "Gender (Female = 1, Male = 0)", "Household Income (Bracket Midpoint)"), type = "html", header = FALSE, float = FALSE)
-
-ns.whites$wb.thermdiff <- ns.whites$wtherm-ns.whites$btherm
-anes.sum.tab <- stargazer(ns.whites[,c("btherm", "wtherm", "wb.thermdiff")], covariate.labels = c("Black Therm. Score", "White Therm. Score", "White-Black Therm. Difference"), header = FALSE, float = FALSE)
-cces.sum.tab <- append(cces.sum.tab, "\\emph{CCES, 2006, 2008, 2009, 2010, 2011} \\\\", after = 6)
-cces.sum.tab <- append(cces.sum.tab, "\\\\ \\emph{ANES, 1984-1998} \\\\", after = 14)
-cces.sum.tab <- append(cces.sum.tab, anes.sum.tab[7:9], after = 15)
-cat(paste(cces.sum.tab, collapse = "\n"), "\n")
-##cat(paste(cces.sum.tab, collapse = "\n"), "\n", file = "../tables/summary-stats-ind.tex")
-
-
-
-south.counties$slavesperwhite <- with(south.counties, stot1860/whtot1860)
-## with alternative definition of slavery -- slaves per white
-sph.dem <- lm(dem ~ log(1+slavesperwhite), data = south.counties, weights = sample.size)
-# summary(sph.dem)
-
-sph.dem.fe <- lm(dem ~ log(1+slavesperwhite) + state.abb, data = south.counties, weights = sample.size)
-# summary(sph.dem.fe)
-
-sph.dem.full <- lm(update(base1860.form, dem ~ log(1+slavesperwhite) + . - pslave1860), data = south.counties, weights = sample.size)
-# summary(sph.dem.full)
-
-sph.iv <- ivreg(update(base.iv.form, dem ~ log(1+slavesperwhite) + . - pslave1860), data = south.counties, weights = sample.size)
-# summary(sph.iv)
-
-
-sph.aff <- lm(affirm ~ log(1+slavesperwhite), data = south.counties, weights = sample.size)
-# summary(sph.aff)
-
-sph.aff.fe <- lm(affirm ~ log(1+slavesperwhite) + state.abb, data = south.counties, weights = sample.size)
-# summary(sph.aff.fe)
-
-sph.aff.full <- lm(update(base1860.form, affirm ~ log(1+slavesperwhite) + . - pslave1860), data = south.counties, weights = sample.size)
-# summary(sph.aff.full)
-
-sph.aff.iv <- ivreg(update(base.iv.form, affirm ~ log(1+slavesperwhite) + . - pslave1860), data = south.counties, weights = sample.size, subset = cottonsuit > 0)
-# summary(sph.aff.iv)
-
-
-sph.resent <- lm(resent ~ log(1+slavesperwhite), data = south.counties, weights = sample.size.res)
-# summary(sph.resent)
-
-sph.resent.fe <- lm(resent ~ log(1+slavesperwhite) +  state.abb, data = south.counties, weights = sample.size.res)
-# summary(sph.resent.fe)
-
-sph.resent.full <- lm(update(base1860.form, resent ~ log(1+slavesperwhite) + . - pslave1860), data = south.counties, weights = sample.size.res)
-# summary(sph.resent.full)
-
-sph.resent.iv <- ivreg(update(base.iv.form, resent ~ log(1+slavesperwhite) + . - pslave1860| .), data = south.counties, weights = sample.size.res, subset = cottonsuit > 0)
-# summary(sph.resent.iv)
-
-sph.res.first <- lm(update(base.first.form, log(1+slavesperwhite) ~ .), data = south.counties, weights = sample.size, na.action = na.exclude)
-# summary(sph.res.first)
-
-
-stargazer(sph.dem.full, sph.iv, sph.aff.full, sph.aff.iv, sph.resent.full,sph.resent.iv, type = "html",
-          keep = "slavesperwhite", style = "apsr", omit.stat = c("ll", "adj.rsq", "F", "ser"),
-          covariate.labels = c("Log(1 + Slaves per White, 1860)"), dep.var.labels = c("Prop Democrat", "Affirm. Action", "Racial Resentment"),
-          title = "Effect of slavery on white partisan identification, views on affirmative action, and racial resentment with an alternative definition of slavery: slaves per slaveholder.", label = "t:slavesperholder")
-
-
-
-
-## Individual results (whites)
-
-varlabs <- c("Prop. Slave, 1860", "Log(County Area)", "Ruggedness", "Land Inequality, 1860", "Prop. Small Farm, 1860", "Log(Total Pop., 1860)", "Log(Farm Value per  acre, 1860)", "Prop. Free Black, 1860", "Log(Improved Acres, 1860)", "Rail Access, 1860", "Water Access, 1860", "Educ: HS Grad", "Educ: Some College", "Educ: 2-year degree", "Educ: 4-year degree", "Educ: Postgrad", "Family Inc: \\$20,000-50,000", "Family Inc: \\$50,000-100,000", "Family Inc: \\$100,000-150,000", "Family Inc: \\$150,000+", "Religion Import.", "Female", "Age", "Prop. Black in Zip, 2000", "Log(Median Zip Code Inc, 2010)", "White Unemp. Rate, 2010-2014", "Log(White-Black Median Inc Ratio)")
-
-ind.dem.fe <- glm(dem ~ pslave1860 + state.abb*as.factor(year), data = s.whites, family=binomial(), weights = weights)
-robust.se(ind.dem.fe, clvar = "fips")
-
-ind.dem.1860 <- glm(update(base1860.form, dem ~ . + state.abb*as.factor(year)), data = s.whites, family=binomial(), weights = weights)
-ind.dem.1860.rse <- robust.se(ind.dem.1860, clvar = "fips")
-# ind.dem.1860.rse
-
-ind.dem.full <- glm(update(ind.form, dem ~ .), data = s.whites, family=binomial(), weights = weights)
-ind.dem.full.rse <-robust.se(ind.dem.full, clvar = "fips")
-# ind.dem.full.rse
-
-ind.dem.context <- glm(update(context.form, dem ~ .), data = s.whites, family = binomial(), weights = weights)
-ind.dem.context.rse <- robust.se(ind.dem.context, clvar = "fips")
-# ind.dem.context.rse
-
-ind.dem.int <- glm(update(ind.int.form, dem ~ .), data = s.whites, family=binomial(), weights = weights)
-ind.dem.int.rse <-robust.se(ind.dem.int, clvar = "fips")
-# ind.dem.int.rse
-
-ind.dem.context.int <- glm(update(context.int.form, dem ~ .), data = s.whites, family = binomial(), weights = weights)
-ind.dem.context.int.rse <- robust.se(ind.dem.context.int, clvar = "fips")
-# ind.dem.context.int.rse
-
-
-
-ind.aff.fe <- glm(affirm ~ pslave1860 + state.abb*as.factor(year), data = s.whites, family=binomial(), weights = weights)
-robust.se(ind.aff.fe, clvar = "fips")
-
-ind.aff.1860 <- glm(update(base1860.form, affirm ~ . + state.abb*as.factor(year)), data = s.whites, family=binomial(), weights = weights)
-ind.aff.1860.rse <- robust.se(ind.aff.1860, clvar = "fips")
-# ind.aff.1860.rse
-
-ind.aff.full <- glm(update(ind.form, affirm ~ .), data = s.whites, family=binomial(), weights = weights)
-ind.aff.full.rse <- robust.se(ind.aff.full, clvar = "fips")
-# ind.aff.full.rse
-
-ind.aff.context <- glm(update(context.form, affirm ~ .), data = s.whites, family = binomial(), weights = weights)
-ind.aff.context.rse <- robust.se(ind.aff.context, clvar = "fips")
-# ind.aff.context.rse
-
-ind.aff.int <- glm(update(ind.int.form, affirm ~ .), data = s.whites, family=binomial(), weights = weights)
-ind.aff.int.rse <-robust.se(ind.aff.int, clvar = "fips")
-# ind.aff.int.rse
-
-ind.aff.context.int <- glm(update(context.int.form, affirm ~ .), data = s.whites, family = binomial(), weights = weights)
-ind.aff.context.int.rse <- robust.se(ind.aff.context.int, clvar = "fips")
-# ind.aff.context.int.rse
-
-
-ind.resent.fe <- lm(resent ~ pslave1860 + state.abb*as.factor(year), data = s.whites, weights = weights)
-robust.se(ind.resent.fe, clvar = "fips")
-
-ind.resent.1860 <- lm(update(base1860.form, resent ~ . + state.abb*as.factor(year)), data = s.whites, weights = weights)
-ind.resent.1860.rse <- robust.se(ind.resent.1860, clvar = "fips")
-# ind.resent.1860.rse
-
-ind.resent.full <- lm(update(ind.form, resent ~ .), data = s.whites, weights = weights)
-ind.resent.full.rse <- robust.se(ind.resent.full, clvar = "fips")
-# ind.resent.full.rse
-
-ind.resent.context <- lm(update(context.form, resent ~ .), data = s.whites, weights = weights)
-ind.resent.context.rse <- robust.se(ind.resent.context, clvar = "fips")
-# ind.resent.context.rse
-
-ind.resent.int <- lm(update(ind.int.form, resent ~ .), data = s.whites, weights = weights)
-ind.resent.int.rse <- robust.se(ind.resent.int, clvar = "fips")
-# ind.resent.int.rse
-
-ind.resent.context.int <- lm(update(context.int.form, resent ~ .), data = s.whites, weights = weights)
-ind.resent.context.int.rse <- robust.se(ind.resent.context.int, clvar = "fips")
-# ind.resent.context.int.rse
-
-
-ind.full.table <- stargazer(ind.dem.1860, ind.dem.full, ind.dem.context, ind.aff.1860, ind.aff.full, ind.aff.context, ind.resent.1860, ind.resent.full,ind.resent.context, type = "html",
-          omit = c("state","year", "latitude", "longitude"), style = "apsr", omit.stat = c("ll", "adj.rsq", "F", "ser", "bic", "rsq", "aic"),
-          se = list(ind.dem.1860.rse[,2], ind.dem.full.rse[,2], ind.dem.context.rse[,2], ind.aff.1860.rse[,2], ind.aff.full.rse[,2], ind.aff.context.rse[,2], ind.resent.1860.rse[,2], ind.resent.full.rse[,2], ind.resent.context.rse[,2]), column.sep.width = "0pt",
-          covariate.labels = varlabs, float = FALSE, header = FALSE, add.lines = list(rep("", 9), ch.row("State-Year Fixed Effects", rep(TRUE,9)), ch.row("Latitude/Longitude", rep(TRUE, 9)), rep("", 9)), multicolumn = TRUE, dep.var.labels = rep(c("Prop Democrat", "Affirm. Action", "Racial Resentment"), each = 3))
-ind.full.table[4] <- "\\\\[-1.8ex] & \\multicolumn{3}{c}{Prop. Democrat} & \\multicolumn{3}{c}{Affirm. Action} & \\multicolumn{3}{c}{Racial Resentment} \\\\ "
-ind.full.table[5] <- "\\\\[-1.8ex] & \\multicolumn{3}{c}{Logit} & \\multicolumn{3}{c}{Logit} & \\multicolumn{3}{c}{OLS} \\\\ "
-ind.full.table <- gsub("\\{\\*\\}", "\\{\\\\dagger\\}", ind.full.table)
-ind.full.table <- gsub("\\{\\*\\*\\}", "\\{\\*\\}", ind.full.table)
-ind.full.table <- gsub("\\{\\*\\*\\*\\}", "\\{\\*\\*\\}", ind.full.table)
-ind.full.table[length(ind.full.table)-1] <- ""
-cat(paste(ind.full.table, collapse = "\n"), "\n")
-##cat(paste(ind.full.table, collapse = "\n"), "\n", file = "../tables/individual-full.tex")
-
-
-varlabs.int <- c("Prop. Slave $\\times$ Educ: HS Grad", "Prop. Slave $\\times$ Educ: Some College", "Prop. Slave $\\times$ Educ: 2-year degree", "Prop. Slave $\\times$ Educ: 4-year degree", "Prop. Slave $\\times$ Educ: Postgrad", "Prop. Slave $\\times$ Family Inc: \\$20,000-50,000", "Prop. Slave $\\times$ Family Inc: \\$50,000-100,000", "Prop. Slave $\\times$ Family Inc: \\$100,000-150,000", "Prop. Slave $\\times$ Family Inc: \\$150,000+", "Prop. Slave $\\times$ Religion Import.", "Prop. Slave $\\times$ Female", "Prop. Slave $\\times$ Age", "Prop. Slave $\\times$ Prop. Black in Zip, 2000", "Prop. Slave $\\times$ Log(Median Zip Code Inc, 2010)", "Prop. Slave $\\times$ White Unemp. Rate, 2010-2014", "Prop. Slave $\\times$ Log(White-Black Median Inc Ratio)")
-
-int.full.table <- stargazer(ind.dem.int, ind.dem.context.int, ind.aff.int, ind.aff.context.int, ind.resent.int, ind.resent.context.int, type = "html",
-          keep = c("pslave1860:"), style = "apsr", omit.stat = c("ll", "adj.rsq", "F", "ser", "bic", "rsq", "aic"),
-          se = list(ind.dem.int.rse[,2], ind.dem.context.int.rse[,2], ind.aff.int.rse[,2], ind.aff.context.int.rse[,2], ind.resent.int.rse[,2], ind.resent.context.int.rse[,2]), column.sep.width = "0pt",
-          covariate.labels = varlabs.int, float = FALSE, header = FALSE, add.lines = list(rep("", 6), ch.row("State-Year Fixed Effects", rep(TRUE,6)), ch.row("Lower-Order Terms", rep(TRUE,6)), ch.row("Individual-Level Covariates", rep(TRUE, 6)), ch.row("Contextual Covariates", rep(c(FALSE,TRUE), 3)), rep("", 6)), multicolumn = TRUE, dep.var.labels = rep(c("Prop Democrat", "Affirm. Action", "Racial Resentment"), each = 2))
-int.full.table[4] <- "\\\\[-1.8ex] & \\multicolumn{2}{c}{Prop. Democrat} & \\multicolumn{2}{c}{Affirm. Action} & \\multicolumn{2}{c}{Racial Resentment} \\\\ "
-int.full.table[5] <- "\\\\[-1.8ex] & \\multicolumn{2}{c}{Logit} & \\multicolumn{2}{c}{Logit} & \\multicolumn{2}{c}{OLS} \\\\ "
-int.full.table <- gsub("\\{\\*\\}", "\\{\\\\dagger\\}", int.full.table)
-int.full.table <- gsub("\\{\\*\\*\\}", "\\{\\*\\}", int.full.table)
-int.full.table <- gsub("\\{\\*\\*\\*\\}", "\\{\\*\\*\\}", int.full.table)
-int.full.table[length(int.full.table)-1] <- ""
-cat(paste(int.full.table, collapse = "\n"), "\n")
-##cat(paste(int.full.table, collapse = "\n"), "\n", file = "../tables/individual-interaction.tex")
-
-
-## Livestock instead of land for civil war destruction
-
-south.counties$civil.des.lstock <- with(south.counties, (livstock - livstock1870)/livstock)
-is.na(south.counties$civil.des.lstock) <- which(south.counties$livstock == 0)
-cnty.dem.civil.lstock <- lm(update(base1860.form, dem ~ . + civil.des.lstock), data = south.counties, weights = sample.size)
-# summary(cnty.dem.civil.lstock)
-
-cnty.aff.civil.lstock <- lm(update(base1860.form, affirm ~ . + civil.des.lstock), data = south.counties, weights = sample.size)
-# summary(cnty.aff.civil.lstock)
-
-cnty.resent.civil.lstock <- lm(update(base1860.form, resent ~ . + civil.des.lstock), data = south.counties, weights = sample.size.res)
-# summary(cnty.resent.civil.lstock)
-
-livestock.tab <- stargazer(cnty.dem.civil.lstock, cnty.aff.civil.lstock, cnty.resent.civil.lstock, type = "html",keep = c("pslave1860","civil.des.lstock"), style = "apsr", omit.stat = c("ll", "adj.rsq", "F", "ser"), covariate.labels = c("Prop. Slave, 1860", "Livestock Value Loss, 1860-1870"), dep.var.labels = c("Prop. Democrat", "Affirm. Action", "Racial Resentment"), column.sep.width = "5pt", float = FALSE, header = FALSE, add.lines = list(rep("", 3), ch.row("State Fixed Effects", rep(TRUE, 3)), ch.row("1860 Covariates", rep(TRUE, 3)), rep("", 3)), multicolumn = FALSE)
-livestock.tab[4]
-livestock.tab <- gsub("\\{\\*\\}", "\\{\\\\dagger\\}", livestock.tab)
-livestock.tab <- gsub("\\{\\*\\*\\}", "\\{\\*\\}", livestock.tab)
-livestock.tab <- gsub("\\{\\*\\*\\*\\}", "\\{\\*\\*\\}", livestock.tab)
-livestock.tab <- livestock.tab[-(length(livestock.tab)-1)]
-cat(paste(livestock.tab, collapse = "\n"), "\n")
-##cat(paste(livestock.tab, collapse = "\n"), "\n", file = "../tables/livestock.tex")
-
-
-
-## Inequality outcomes
-cnty.ineq40.full <- lm(update(base1860.form, I(whtlwage1940-blklwage1940) ~ .), data = south.counties)
-# summary(cnty.ineq40.full)
-
-cnty.ineq40.iv <- ivreg(update(base.iv.form, I(whtlwage1940-blklwage1940) ~ .), data = south.counties, subset = cottonsuit > 0)
-# summary(cnty.ineq40.iv)
-
-cnty.ineq40.rform <- lm(update(rform.form, I(blklwage1940) ~ .), data = wh.counties, !(state.abb %in% st.list) & !(state.abb %in% c("MD", "DE", "MO")) & cottonsuit > 0)
-# summary(cnty.ineq40.rform)
-
-cnty.ineq.full <- lm(update(base1860.form, log(wbincratio2014) ~ .), data = south.counties)
-# summary(cnty.ineq.full)
-
-cnty.ineq.iv <- ivreg(update(base.iv.form, log(wbincratio2014) ~ .), data = countydata, subset = state.abb %in% st.list & cottonsuit > 0)
-# summary(cnty.ineq.iv)
-
-
-cnty.inc.full <- lm(update(base1860.form, log(w.med.income2014) ~ .), data = south.counties)
-# summary(cnty.inc.full)
-
-cnty.inc.iv <- ivreg(update(base.iv.form, log(w.med.income2014) ~ .), data = south.counties, subset = cottonsuit > 0)
-# summary(cnty.inc.iv)
-
-cnty.inc.rform <- lm(update(rform.form, log(w.med.income2014) ~ .), data = wh.counties, !(state.abb %in% st.list) & !(state.abb %in% c("MD", "DE", "MO")) & cottonsuit > 0)
-# summary(cnty.inc.rform)
-
-
-ineq.tab <- stargazer(cnty.ineq40.full, cnty.ineq40.iv, cnty.ineq.full, cnty.ineq.iv, cnty.inc.full, cnty.inc.iv, type = "html",
-          keep = "pslave1860", style = "apsr", omit.stat = c("ll", "adj.rsq", "F", "ser"),
-          covariate.labels = c("Prop. Slave, 1860"), dep.var.labels = c("log White Wage - log Black Wages, 1940", "log White Income - log Black Income, 1990", "log Median Income, 2000"), column.sep.width = "5pt", float = FALSE, header = FALSE, add.lines = list(rep("", 7), ch.row("State Fixed Effects", rep(TRUE, 6)), ch.row("Geographic Controls", rep(TRUE, 6)), ch.row("1860 Covariates", rep(c(TRUE, FALSE), 3)), rep("", 7)), multicolumn = FALSE)
-ineq.tab[4] <- "\\\\[-1.8ex] &  \\multicolumn{2}{c}{log White-Black} & \\multicolumn{2}{c}{log White-Black} & \\multicolumn{2}{c}{log White Median} \\\\ "
-ineq.tab[5] <- " &  \\multicolumn{2}{c}{Wage Gap, 1940} & \\multicolumn{2}{c}{Med. Income Gap, 2014} & \\multicolumn{2}{c}{Income, 2014} \\\\ "
-ineq.tab[6] <- "\\\\[-1.8ex] & OLS & IV & OLS & IV & OLS & IV \\\\ "
-ineq.tab <- gsub("\\{\\*\\}", "\\{\\\\dagger\\}", ineq.tab)
-ineq.tab <- gsub("\\{\\*\\*\\}", "\\{\\*\\}", ineq.tab)
-ineq.tab <- gsub("\\{\\*\\*\\*\\}", "\\{\\*\\*\\}", ineq.tab)
-ineq.tab <- ineq.tab[-(length(ineq.tab)-1)]
-cat(paste(ineq.tab, collapse = "\n"), "\n")
-##cat(paste(ineq.tab, collapse = "\n"), "\n", file = "../tables/ineq-effect.tex")
-
-
-ineq.dem <- lm(dem ~ log(wbincratio2014) + state.abb, data = south.counties, weights = sample.size)
-# summary(ineq.dem)
-
-ineq.dem.full <- lm(update(base1860.form, dem ~ log(wbincratio2014) + .), data = south.counties, weights = sample.size)
-# summary(ineq.dem.full)
-
-
-ineq.aff <- lm(affirm ~ log(wbincratio2014) + state.abb, data = south.counties, weights = sample.size)
-# summary(ineq.aff)
-
-ineq.aff.full <- lm(update(base1860.form, affirm ~ log(wbincratio2014) + .), data = south.counties, weights = sample.size)
-# summary(ineq.aff.full)
-
-ineq.resent <- lm(resent ~ log(wbincratio2014) + state.abb, data = south.counties, weights = sample.size.res)
-# summary(ineq.resent)
-
-ineq.resent.full <- lm(update(base1860.form, resent ~ log(wbincratio2014) + .), data = south.counties, weights = sample.size.res)
-# summary(ineq.resent.full)
-
-
-ineq2.tab <- stargazer(ineq.dem, ineq.dem.full, ineq.aff, ineq.aff.full, ineq.resent, ineq.resent.full, type = "html", keep = c("wbincratio2014", "pslave1860"), style = "apsr", omit.stat = c("ll", "adj.rsq", "F", "ser"),
-                       covariate.labels = c("log White-Black Income Ratio, 2014","Prop. Slave, 1860"), dep.var.labels = c("Prop Democrat", "Affirm. Action", "Racial Resentment"), column.sep.width = "5pt", float = FALSE, header = FALSE, add.lines = list(rep("", 7), ch.row("State Fixed Effects", rep(TRUE, 6)), ch.row("1860 Covariates", rep(TRUE, 6)), rep("", 7)), multicolumn = FALSE)
-ineq2.tab[4] <- "\\\\[-1.8ex] & \\multicolumn{2}{c}{Proportion} & \\multicolumn{2}{c}{Support for} & \\multicolumn{2}{c}{Racial}  \\\\ "
-ineq2.tab <- append(ineq2.tab, " & \\multicolumn{2}{c}{Democrat} & \\multicolumn{2}{c}{Affirm. Action} &  \\multicolumn{2}{c}{Resentment }  \\\\ ", after = 4)
-ineq2.tab <- gsub("\\{\\*\\}", "\\{\\\\dagger\\}", ineq2.tab)
-ineq2.tab <- gsub("\\{\\*\\*\\}", "\\{\\*\\}", ineq2.tab)
-ineq2.tab <- gsub("\\{\\*\\*\\*\\}", "\\{\\*\\*\\}", ineq2.tab)
-ineq2.tab <- ineq2.tab[-(length(ineq2.tab)-1)]
-cat(paste(ineq2.tab, collapse = "\n"), "\n")
-##cat(paste(ineq2.tab, collapse = "\n"), "\n", file = "../tables/ineq-compare.tex")
-
-## Interaction of slavery with income
-
-ind.dem.inc <- glm(update(base1860.form, dem ~ . + pslave1860*log(inc.mid)), data = s.whites, family=binomial())
-ind.dem.inc.rse <-robust.se(ind.dem.inc, clvar = "fips")
-# ind.dem.inc.rse
-
-ind.aff.inc <- glm(update(base1860.form, affirm ~ . + pslave1860*log(inc.mid) ), data = s.whites, family=binomial())
-ind.aff.inc.rse <- robust.se(ind.aff.inc, clvar = "fips")
-# ind.aff.inc.rse
-
-ind.resent.inc<- lm(update(base1860.form, resent ~ . + pslave1860*log(inc.mid)), data = s.whites)
-ind.resent.inc.rse <- robust.se(ind.resent.inc, clvar = "fips")
-# ind.resent.inc.rse
-
-inc.int.tab <-  stargazer(ind.dem.inc, ind.aff.inc, ind.resent.inc, type = "html",
-          keep = c("pslave1860", "inc.mid"), style = "apsr", omit.stat = c("ll", "adj.rsq", "F", "ser", "bic"),
-          se = list(ind.dem.inc.rse[,2], ind.aff.inc.rse[,2], ind.resent.inc.rse[,2]),
-          covariate.labels = c("Prop. Slave, 1860", "Income", "Prop. Slave $\\times$ Income"), dep.var.labels = c("Prop Democrat", "Affirm. Action", "Racial Resentment"), column.sep.width = "5pt", float = FALSE, header = FALSE, add.lines = list(rep("", 3), ch.row("State Fixed Effects", rep(TRUE, 3)), ch.row("1860 Covariates", rep(TRUE, 3)), ch.row("Clustered SEs", rep(TRUE, 3)), rep("", 3)), multicolumn = FALSE)
-inc.int.tab <- gsub("\\{\\*\\}", "\\{\\\\dagger\\}", inc.int.tab)
-inc.int.tab <- gsub("\\{\\*\\*\\}", "\\{\\*\\}", inc.int.tab)
-inc.int.tab <- gsub("\\{\\*\\*\\*\\}", "\\{\\*\\*\\}", inc.int.tab)
-inc.int.tab <- inc.int.tab[-(length(inc.int.tab)-1)]
-cat(paste(inc.int.tab, collapse = "\n"), "\n")
-##cat(paste(inc.int.tab, collapse = "\n"), "\n", file = "../tables/income-interaction.tex")
-
-
-## How much the black population declined?
-south.counties$blk.shrink.4020 <- with(south.counties, blkprop20- blkprop40)
-cnty.dem.blkshrink <- lm(update(base1860.form, dem ~ pslave1860*blk.shrink.4020 + .), data = south.counties, weights = sample.size)
-# summary(cnty.dem.blkshrink)
-
-cnty.aff.blkshrink <- lm(update(base1860.form, affirm ~ pslave1860*blk.shrink.4020 + .), data = south.counties, weights = sample.size)
-# summary(cnty.aff.blkshrink)
-
-cnty.resent.blkshrink <- lm(update(base1860.form, resent ~ pslave1860*blk.shrink.4020 + .), data = south.counties, weights = sample.size.res)
-# summary(cnty.resent.blkshrink)
-
-south.counties$blk.shrink.7020 <- with(south.counties, blkprop20- blkprop70)
-cnty.dem.blkshrink.70 <- lm(update(base1860.form, dem ~ pslave1860*blk.shrink.7020 + .), data = south.counties, weights = sample.size)
-# summary(cnty.dem.blkshrink.70)
-
-cnty.aff.blkshrink.70 <- lm(update(base1860.form, affirm ~ pslave1860*blk.shrink.7020  + .), data = south.counties, weights = sample.size)
-# summary(cnty.aff.blkshrink.70)
-
-cnty.resent.blkshrink.70 <- lm(update(base1860.form, resent ~ pslave1860*blk.shrink.7020 + .), data = south.counties, weights = sample.size.res)
-# summary(cnty.resent.blkshrink.70)
-
-blkshrink.tab <- stargazer(cnty.dem.blkshrink, cnty.dem.blkshrink.70, cnty.aff.blkshrink, cnty.aff.blkshrink.70, cnty.resent.blkshrink, cnty.resent.blkshrink.70, type = "html",
-          keep = c("pslave1860", "blk.shrink.4020", "blk.shrink.7020"), style = "apsr", omit.stat = c("ll", "adj.rsq", "F", "ser"),
-          covariate.labels = c("Prop. Slave, 1860", "Prop Black Decline, 1940-1920", "Prop Black Decline, 1970-1920", "Prop Slave $\\times$ Black Decline, 1940-1920", "Prop Slave $\\times$ Black Decline, 1970-1920"),
-                           dep.var.labels = c( "Prop Democrat", "Affirm. Action", "Racial Resentment"), column.sep.width = "5pt", float = FALSE, header = FALSE, add.lines = list(rep("", 3), ch.row("State Fixed Effects", rep(TRUE, 6)), ch.row("1860 Covariates", rep(TRUE, 6)), rep("", 3)), multicolumn = FALSE)
-blkshrink.tab[4] <- "\\\\[-1.8ex] & \\multicolumn{2}{c}{Prop. Democrat} & \\multicolumn{2}{c}{Affirm. Action} & \\multicolumn{2}{c}{Racial Resentment} \\\\ "
-blkshrink.tab <- gsub("\\{\\*\\}", "\\{\\\\dagger\\}", blkshrink.tab)
-blkshrink.tab <- gsub("\\{\\*\\*\\}", "\\{\\*\\}", blkshrink.tab)
-blkshrink.tab <- gsub("\\{\\*\\*\\*\\}", "\\{\\*\\*\\}", blkshrink.tab)
-blkshrink.tab <- blkshrink.tab[-(length(blkshrink.tab)-1)]
-cat(paste(blkshrink.tab, collapse = "\n"), "\n")
-##cat(paste(blkshrink.tab, collapse = "\n"), "\n", file = "../tables/black-shrink.tex")
-
-
-
-
-## Inflows and outflows
-outflow.fe <- lm(I(outflow/totpop00) ~ pslave1860 + state.abb, data = countydata, subset = state.abb %in% st.list)
-# summary(outflow.fe)
-
-outflow.1860 <- lm(update(base1860.form, I(outflow/totpop00) ~ .), data = countydata, subset = state.abb %in% st.list)
-# summary(outflow.1860)
-
-inflow.fe <- lm(I(inflow/totpop00) ~ pslave1860 + state.abb, data = countydata, subset = state.abb %in% st.list)
-# summary(inflow.fe)
-
-inflow.1860 <- lm(update(base1860.form, I(inflow/totpop00) ~ .), data = countydata, subset = state.abb %in% st.list)
-# summary(inflow.1860)
-
-
-outmig.tab <- stargazer(inflow.1860, outflow.1860, #cnty.dem.flow, cnty.aff.flow, cnty.resent.flow,
-          type = "html", keep = "pslave1860", style = "apsr", omit.stat = c("ll", "adj.rsq", "F", "ser"),
-          covariate.labels = c("Prop. Slave, 1860"), dep.var.labels = c("In-migration", "Out-migration"), column.sep.width = "5pt", float = FALSE, header = FALSE, add.lines = list(rep("", 3), ch.row("State Fixed Effects", rep(TRUE, 2)), ch.row("1860 Covariates", rep(TRUE, 2)), rep("", 3)), multicolumn = FALSE)
-outmig.tab <- gsub("\\{\\*\\}", "\\{\\\\dagger\\}", outmig.tab)
-outmig.tab <- gsub("\\{\\*\\*\\}", "\\{\\*\\}", outmig.tab)
-outmig.tab <- gsub("\\{\\*\\*\\*\\}", "\\{\\*\\*\\}", outmig.tab)
-outmig.tab <- outmig.tab[-(length(outmig.tab)-1)]
-cat(paste(outmig.tab, collapse = "\n"), "\n")
-##cat(paste(outmig.tab, collapse = "\n"), "\n", file = "../tables/outmig.tex")
-
-
 ```
+
 
 
 
@@ -1440,6 +1078,7 @@ pums$fips1935 <- NA
 
 
 ```{r, eval=FALSE, include=FALSE}
+#Forloop
 for (i in move.rows) {
   cat("this row: ", i, "\n")
   this.state <- county.fips.u[which(county.fips.u$sfips == pums$migplac5[i]),]
@@ -1473,6 +1112,7 @@ save(pums18b.south, file = "pums40-migration-black.RData")
 
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Data load and regressions
 
 load("pums40-migration-white.RData")
 load("pums40-migration-black.RData")
@@ -1695,6 +1335,7 @@ in.lo.ses <- c(in.educ.lo$marg.se, in.age.lo$marg.se, in.sex.lo$marg.se,
 
 
 ```{r, echo=FALSE}
+#Figure Output
 
 ##cairo_pdf("figs/migration1940.pdf", family = "Minion Pro", height = 4, width = 7, pointsize = 9)
 cov.labs <- c("Education", "Age", "Female", "Nativity", "Living in birthstate", "Weeks Worked", "Wages", "Monthly Rent")
